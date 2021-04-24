@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from common.models import AbstractDatetimeModel
 
 
-class Deals(AbstractDatetimeModel):
+class Deal(AbstractDatetimeModel):
     customer = models.CharField(
         max_length=100,
         verbose_name=_("Клиент"),
