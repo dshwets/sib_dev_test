@@ -20,8 +20,10 @@ class UploadDealsView(APIView):
         file = serializer.validated_data['file']
         try:
             decoded_file = file.read().decode()
-        except UnicodeDecodeError:
-            return Response({"desc": "Ошибка декодирования файла, не верный формат, требуется .csv"},
+            if not file.name.endswith('.csv'):
+                raise ValueError
+        except (UnicodeDecodeError, ValueError):
+            return Response({"desc": "Ошибка декодирования файла, не верный формат, необходим .csv"},
                             status.HTTP_400_BAD_REQUEST, )
         io_string = io.StringIO(decoded_file)
         reader = csv.reader(io_string)
