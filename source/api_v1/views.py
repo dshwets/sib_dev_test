@@ -17,7 +17,6 @@ from api_v1.serializers import FileUploadSerializer, TopClientSerializer
 
 
 class UploadDealsView(APIView):
-
     def post(self, request, *args, **kwargs):
         serializer = FileUploadSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
@@ -51,17 +50,21 @@ class UploadDealsView(APIView):
             Deals_objects.append(Deal(
                 customer=line[0],
                 item=line[1],
-                total=line[2],
-                qty=line[3],
+                total=total,
+                qty=qty,
                 date_time=make_aware(date),
             ))
         Deal.objects.bulk_create(Deals_objects)
-        return Response("data is uploaded correct" if not wrong_strings['invalid_data_strings:'] else wrong_strings, status=status.HTTP_200_OK)
+        return Response("data is uploaded correct" if not wrong_strings['invalid_data_strings:'] else wrong_strings,
+                        status=status.HTTP_200_OK)
 
 
 class GetTopCustomers(APIView):
     def get(self, request, *args, **kwargs):
-        last_request_time = Deal.objects.last().created_at
+        try:
+            last_request_time = Deal.objects.last().created_at
+        except AttributeError:
+            return Response({"response": "No data"}, 200)
         last_request_time_delta = last_request_time - timedelta(seconds=1)
         all_clients = Deal.objects.filter(created_at__range=(last_request_time_delta,
                                                              last_request_time))
