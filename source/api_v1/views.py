@@ -34,6 +34,10 @@ class UploadDealsView(APIView):
         wrong_strings = {
             "invalid_data_strings:": "",
         }
+        if not Deal.objects.last():
+            request_number = 0
+        else:
+            request_number = Deal.objects.last().request_number + 1
         for line in reader:
             if reader.line_num == 1:
                 continue
@@ -53,6 +57,7 @@ class UploadDealsView(APIView):
                 total=total,
                 qty=qty,
                 date_time=make_aware(date),
+                request_number=request_number
             ))
         Deal.objects.bulk_create(Deals_objects)
         return Response("data is uploaded correct" if not wrong_strings['invalid_data_strings:'] else wrong_strings,
@@ -62,12 +67,10 @@ class UploadDealsView(APIView):
 class GetTopCustomers(APIView):
     def get(self, request, *args, **kwargs):
         try:
-            last_request_time = Deal.objects.last().created_at
+            last_request = Deal.objects.last().request_number
         except AttributeError:
             return Response({"response": "No data"}, 200)
-        last_request_time_delta = last_request_time - timedelta(seconds=1)
-        all_clients = Deal.objects.filter(created_at__range=(last_request_time_delta,
-                                                             last_request_time))
+        all_clients = Deal.objects.filter(request_number=last_request)
         top_5_clients = all_clients.values('customer').annotate(gems=ArrayAgg('item', distinct=True),
                                                                 total=Sum('total')).order_by('-total')[:5]
         for client in top_5_clients:
