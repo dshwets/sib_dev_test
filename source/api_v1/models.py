@@ -27,6 +27,10 @@ class Deal(AbstractDatetimeModel):
     date_time = models.DateTimeField(
         verbose_name=_("Дата"),
     )
+    request_number = models.IntegerField(
+        validators=[MinValueValidator(0), ],
+        verbose_name=_("Номер запроса")
+    )
 
     class Meta:
         verbose_name = _('Сделка')
